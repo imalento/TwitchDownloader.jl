@@ -77,7 +77,7 @@ function get_segments(playlist::String, begin_sec, end_sec)
         if startswith(part, "#") || length(part) == 0
             continue
         end
-        if (begin_sec == nothing || begin_sec <= floor(time)) && (end_sec == nothing || floor(time) <= end_sec)
+        if (begin_sec === nothing || begin_sec <= floor(time)) && (end_sec === nothing || floor(time) <= end_sec)
             push!(segments, part)
         end
     end
@@ -114,12 +114,12 @@ function main()
     end
 
     begin_sec = nothing
-    if (args_dict["begin"] != nothing)
+    if (args_dict["begin"] !== nothing)
         begin_sec = hms_to_sec(args_dict["begin"])
     end
 
     end_sec = nothing
-    if (args_dict["end"] != nothing)
+    if (args_dict["end"] !== nothing)
         end_sec = hms_to_sec(args_dict["end"])
     end
 
