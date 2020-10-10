@@ -1,8 +1,7 @@
-#=
+#= 
 TwitchDownloader:
 - Julia version: 1.5.2
-- Author: imalento
-=#
+- Author: imalento =#
 module TwitchDownloader
 using IniFile
 using ArgParse
@@ -31,7 +30,7 @@ function get_access_token(client_id, client_secret)
                   "client_secret" => client_secret,
                   "grant_type" => "client_credentials",
                   "scope" => "analytics:read:games")
-    res = HTTP.post("https://id.twitch.tv/oauth2/token", body = HTTP.Form(params))
+    res = HTTP.post("https://id.twitch.tv/oauth2/token", body=HTTP.Form(params))
     return JSON.parse(String(res.body))["access_token"]
 end
 
@@ -39,7 +38,7 @@ function get_video_dict(client_id, access_token, video_id)
     params = Dict("id" => video_id)
     res = HTTP.get("https://api.twitch.tv/helix/videos",
         ["Client-ID" => client_id, "Authorization" => "Bearer $(access_token)"],
-        query = params)
+        query=params)
     return JSON.parse(String(res.body))
 end
 
@@ -68,11 +67,11 @@ end
 
 function get_segments(playlist::String, begin_sec, end_sec)
     parts = split(playlist, "\n")
-    time = 0.0:: Float64
+    time = 0.0::Float64
     segments = []
     for part in parts
         if startswith(part, "#EXTINF")
-            time+=parse(Float64, part[9:length(part) - 1])
+            time += parse(Float64, part[9:length(part) - 1])
             continue
         end
         if startswith(part, "#") || length(part) == 0
@@ -97,7 +96,7 @@ function parse_commandline()
     end
     return ArgParse.parse_args(aps)
 end
-
+    
 function main()
     args_dict = parse_commandline()
     video_id = args_dict["video_id"]
@@ -109,7 +108,7 @@ function main()
     ts_file = joinpath(out_dir, "$(video_id).ts")
     mp4_file = joinpath(out_dir, "$(video_id).ts.mp4")
     dat_file = joinpath(out_dir, "$(video_id).dat")
-    if(isfile(ts_file) || isfile(mp4_file) || isfile(dat_file))
+    if (isfile(ts_file) || isfile(mp4_file) || isfile(dat_file))
         println("Already exists.")
         return
     end
@@ -137,15 +136,15 @@ function main()
     open(ts_file, "a") do f
        for segment in segments
            if (contains(segment, "-unmuted"))
-               segment = replace(segment, "-unmuted" => "-muted", count = 1)
+               segment = replace(segment, "-unmuted" => "-muted", count=1)
            end
            fetch_url = domain * video_name * "/chunked/" * segment
            println(fetch_url)
            while true
                try
-                   res = HTTP.get(fetch_url; retry = false, readtimeout = 60)
+                   res = HTTP.get(fetch_url; retry=false, readtimeout=60)
                    write(f, res.body)
-                   break
+                break
                catch
                    # sleep
                    println("download error")
@@ -154,7 +153,7 @@ function main()
                    # return
                end
            end
-           progress+=1
+           progress += 1
            if mod(progress, 10) == 0
                println("Downloaded $(progress) / $(all_num)")
            end
