@@ -1,4 +1,4 @@
-#= 
+#=
 TwitchDownloader:
 - Julia version: 1.5.2
 - Author: imalento =#
@@ -30,7 +30,7 @@ function get_access_token(client_id, client_secret)
                   "client_secret" => client_secret,
                   "grant_type" => "client_credentials",
                   "scope" => "analytics:read:games")
-    res = HTTP.post("https://id.twitch.tv/oauth2/token", body=HTTP.Form(params))
+    res = HTTP.post("https://id.twitch.tv/oauth2/token", body = HTTP.Form(params))
     return JSON.parse(String(res.body))["access_token"]
 end
 
@@ -38,7 +38,7 @@ function get_video_dict(client_id, access_token, video_id)
     params = Dict("id" => video_id)
     res = HTTP.get("https://api.twitch.tv/helix/videos",
         ["Client-ID" => client_id, "Authorization" => "Bearer $(access_token)"],
-        query=params)
+        query = params)
     return JSON.parse(String(res.body))
 end
 
@@ -96,7 +96,7 @@ function parse_commandline()
     end
     return ArgParse.parse_args(aps)
 end
-    
+
 function main()
     args_dict = parse_commandline()
     video_id = args_dict["video_id"]
@@ -124,6 +124,7 @@ function main()
     end
 
     access_token = get_access_token(client_id, client_secret)
+
     video_dict = get_video_dict(client_id, access_token, video_id)
     video_name, domain = find_video_name_and_domain(video_dict)
     playlist = fetch_playlist(video_name, domain)
@@ -136,13 +137,13 @@ function main()
     open(ts_file, "a") do f
        for segment in segments
            if (contains(segment, "-unmuted"))
-               segment = replace(segment, "-unmuted" => "-muted", count=1)
+               segment = replace(segment, "-unmuted" => "-muted", count = 1)
            end
            fetch_url = domain * video_name * "/chunked/" * segment
            println(fetch_url)
            while true
                try
-                   res = HTTP.get(fetch_url; retry=false, readtimeout=60)
+                   res = HTTP.get(fetch_url; retry = false, readtimeout = 60)
                    write(f, res.body)
                 break
                catch
@@ -163,7 +164,18 @@ function main()
     touch(dat_file)
 end
 
-end # module
+Base.@ccallable function julia_main()::Cint
+    try
+        main()
+    catch
+        Base.invokelatest(Base.display_error, Base.catch_stack())
+        return 1
+    end
+    return 0
+end
 
-using .TwitchDownloader
-TwitchDownloader.main()
+if abspath(PROGRAM_FILE) == @__FILE__
+    main()
+end
+
+end # module
