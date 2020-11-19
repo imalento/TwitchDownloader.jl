@@ -1,7 +1,7 @@
 # TwitchDownloader
 
 ```
-usage: julia TwitchDownloader.jl [--begin BEGIN] [--end END] [-h] video_id
+usage: julia src/TwitchDownloader.jl [--begin BEGIN] [--end END] [-h] video_id
 
 positional arguments:
   video_id
